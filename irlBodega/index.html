@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,10 @@
             margin-top: 20px;
             background-color: #f4f4f9;
             color: #333;
+        }
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f9;
         }
         #header {
             display: flex;
@@ -55,6 +60,10 @@
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
         }
+        body.dark-mode .item {
+            background-color: #444;
+            border-color: #555;
+        }
         .item img {
             width: 100px;
             height: 100px;
@@ -69,7 +78,9 @@
             flex-direction: column;
             align-items: center;
         }
-        .edit-container input[type="file"], .edit-container input[type="text"], .edit-container input[type="number"] {
+        .edit-container input[type="file"],
+        .edit-container input[type="text"],
+        .edit-container input[type="number"] {
             font-size: 1em;
             margin-top: 5px;
             margin-bottom: 10px;
@@ -109,7 +120,8 @@
             font-size: 2em;
             margin-top: 20px;
         }
-        button, input[type="email"] {
+        button,
+        input[type="email"] {
             font-size: 1.5em;
             margin: 5px;
             padding: 10px;
@@ -145,19 +157,39 @@
             border-radius: 8px;
             padding: 20px;
         }
+        body.dark-mode #orderHistory {
+            background-color: #444;
+            border-color: #555;
+        }
         #orderHistory h2 {
             margin-bottom: 10px;
         }
         #orderHistory table {
             width: 100%;
-            border-collapse: collapse;
+            table-layout: auto; /* Ensure the table layout adapts automatically */
+            border-collapse: collapse; /* Necessary for styling */
         }
         #orderHistory th, #orderHistory td {
+            min-width: 100px;
             border: 1px solid #ddd;
             padding: 8px;
+            word-break: break-word; /* Ensure long words break correctly */
+            white-space: normal;    /* Allow text to wrap to multiple lines */
+        }
+
+        .payeeAddress {
+            word-break: break-word; /* Ensure long words break correctly */
+            white-space: normal;    /* Allow text to wrap to multiple lines */
+            display: block;         /* Ensures the content behaves like a block for wrapping */
+            width: 100%;            /* Ensures full width usage for wrapping */
         }
         #orderHistory th {
             background-color: #f2f2f2;
+        }
+        body.dark-mode #orderHistory th,
+        body.dark-mode #orderHistory td {
+            background-color: #555;
+            border-color: #666;
         }
         @media (min-width: 768px) {
             #content {
@@ -171,6 +203,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="header">
         <h1>Nano Point of Sale</h1>
@@ -182,15 +215,15 @@
         <button onclick="submitEmail()">Submit</button>
     </div>
     <div id="welcome">
-        <h2>Hello <span id="userEmailDisplay"></span>.</h2>
-        <h2>Your nano address is <br><span id="userAddress" class="userAddress"></span></h2>
+        <h2>Hello, <span id="userEmailDisplay"></span>.</h2>
+        <h2>Your nano address is: <br><span id="userAddress" class="userAddress"></span></h2>
     </div>
     <div id="content">
         <div id="items">
             <div class="item" data-price="0.10">
                 <img src="https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn" alt="Item 1" id="item1Image">
-                <p contenteditable="true" class="description">Item 1</p>
-                <p>$<span class="price" contenteditable="true">0.10</span></p>
+                <p contenteditable="true" class="description" onblur="saveItems()">Item 1</p>
+                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.10</span></p>
                 <div class="edit-container">
                     <input type="file" id="uploadItem1" class="uploadPhoto" onchange="updateItemPhoto(event, 'item1Image')">
                 </div>
@@ -198,8 +231,8 @@
             </div>
             <div class="item" data-price="0.20">
                 <img src="https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn" alt="Item 2" id="item2Image">
-                <p contenteditable="true" class="description">Item 2</p>
-                <p>$<span class="price" contenteditable="true">0.20</span></p>
+                <p contenteditable="true" class="description" onblur="saveItems()">Item 2</p>
+                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.20</span></p>
                 <div class="edit-container">
                     <input type="file" id="uploadItem2" class="uploadPhoto" onchange="updateItemPhoto(event, 'item2Image')">
                 </div>
@@ -207,8 +240,8 @@
             </div>
             <div class="item" data-price="0.15">
                 <img src="https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn" alt="Item 3" id="item3Image">
-                <p contenteditable="true" class="description">Item 3</p>
-                <p>$<span class="price" contenteditable="true">0.15</span></p>
+                <p contenteditable="true" class="description" onblur="saveItems()">Item 3</p>
+                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.15</span></p>
                 <div class="edit-container">
                     <input type="file" id="uploadItem3" class="uploadPhoto" onchange="updateItemPhoto(event, 'item3Image')">
                 </div>
@@ -216,8 +249,8 @@
             </div>
             <div class="item" data-price="0.25">
                 <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="Item 4" id="item4Image">
-                <p contenteditable="true" class="description">Item 4</p>
-                <p>$<span class="price" contenteditable="true">0.25</span></p>
+                <p contenteditable="true" class="description" onblur="saveItems()">Item 4</p>
+                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
                 <div class="edit-container">
                     <input type="file" id="uploadItem4" class="uploadPhoto" onchange="updateItemPhoto(event, 'item4Image')">
                 </div>
@@ -278,13 +311,16 @@
         let totalAmount = 0.00;
         let buffer = '';
         let payeeAddress = null;
-        
 
-        document.getElementById('loginButton').addEventListener('click', function() {
-            NanoPay.open({ 
+        document.addEventListener("DOMContentLoaded", () => {
+            applyTheme();
+        });
+
+        document.getElementById('loginButton').addEventListener('click', function () {
+            NanoPay.open({
                 title: "Nano Bodega Point of Sale",
-                address: '@mnpezz', // Your App's Address
-                amount: 0.00001, // Small Amount
+                address: '@mnpezz',
+                amount: 0.00001,
                 success: (block) => {
                     userAddress = block.username || block.address;
                     document.getElementById('loginButton').style.display = 'none';
@@ -312,6 +348,7 @@
                 document.getElementById('payButton').style.display = 'block';
                 saveOrderHistory();
                 saveEmail();
+                saveItems();
             }
         }
 
@@ -364,55 +401,59 @@
         function initiatePayment() {
             NanoPay.open({
                 title: "Payment",
-                address: userAddress, //Recipient Address
-                notify: userEmail, // User's email for receipt
-                contact: false, // User's email
-                shipping: false, // User's shipping address
-                currency: 'USD', // Currency type
+                address: userAddress,
+                notify: userEmail,
+                contact: false,
+                shipping: false,
+                currency: 'USD',
                 line_items: [
                     { name: "Total Purchase", price: totalAmount }
                 ],
                 note: userEmail,
                 success: (block) => {
-                console.log(block);
-                // Extract and store the payee's Nano address
-                payeeAddress = block.address; // Store the payee's address
-                // Handle successful payment here
-                addOrderToHistory(payeeAddress, new Date().toLocaleString(), totalAmount);
-                // Reset total amount to 0 after successful payment
-                totalAmount = 0.00;
-                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-                saveOrderHistory();
-            },
-            cancel: () => {
-                console.log("User cancelled");
-            }
-        });
-    }
+                    payeeAddress = block.address;
+                    addOrderToHistory(payeeAddress, new Date().toLocaleString(), totalAmount);
+                    totalAmount = 0.00;
+                    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                    saveOrderHistory();
+                },
+                cancel: () => {
+                    console.log("User cancelled");
+                }
+            });
+        }
 
         function updateItemPhoto(event, imgId) {
             const reader = new FileReader();
-            reader.onload = function() {
+            reader.onload = function () {
                 const img = document.getElementById(imgId);
                 img.src = reader.result;
+                saveItems();
             };
             reader.readAsDataURL(event.target.files[0]);
         }
 
         function addOrderToHistory(payeeAddress, date, amount) {
             const tableBody = document.getElementById('orderHistoryBody');
+            const existingDateHeader = Array.from(tableBody.children).find(row => row.className === 'date-header' && row.textContent.includes(date.split(',')[0]));
+            if (!existingDateHeader) {
+                const dateHeader = document.createElement('tr');
+                dateHeader.className = 'date-header';
+                dateHeader.innerHTML = `<td colspan="3"><strong>${date.split(',')[0]}</strong></td>`;
+                tableBody.appendChild(dateHeader);
+            }
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${payeeAddress}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
+            row.innerHTML = `<td class="payeeAddress">${payeeAddress}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
             tableBody.appendChild(row);
         }
 
         function saveOrderHistory() {
             const orderHistory = document.getElementById('orderHistoryBody').innerHTML;
-            localStorage.setItem('orderHistory', orderHistory);
+            localStorage.setItem(`orderHistory_${userEmail}`, orderHistory);
         }
 
         function loadOrderHistory() {
-            const orderHistory = localStorage.getItem('orderHistory');
+            const orderHistory = localStorage.getItem(`orderHistory_${userEmail}`);
             if (orderHistory) {
                 document.getElementById('orderHistoryBody').innerHTML = orderHistory;
             }
@@ -423,11 +464,57 @@
         }
 
         function loadEmail() {
-            userEmail = localStorage.getItem('userEmail');
+            userEmail            = localStorage.getItem('userEmail');
             if (userEmail) {
                 document.getElementById('userEmailDisplay').textContent = userEmail;
             }
         }
+
+        function saveItems() {
+            const items = document.querySelectorAll('.item');
+            const itemsData = [];
+            items.forEach(item => {
+                const description = item.querySelector('.description').textContent;
+                const price = item.querySelector('.price').textContent;
+                const imgSrc = item.querySelector('img').src;
+                itemsData.push({ description, price, imgSrc });
+            });
+            localStorage.setItem(`items_${userEmail}`, JSON.stringify(itemsData));
+        }
+
+        function loadItems() {
+            const itemsData = JSON.parse(localStorage.getItem(`items_${userEmail}`));
+            if (itemsData) {
+                const items = document.querySelectorAll('.item');
+                itemsData.forEach((data, index) => {
+                    if (items[index]) {
+                        items[index].querySelector('.description').textContent = data.description;
+                        items[index].querySelector('.price').textContent = data.price;
+                        items[index].querySelector('img').src = data.imgSrc;
+                    }
+                });
+            }
+        }
+
+        function applyTheme() {
+            const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        }
+
+        // Event Listener for dom load
+        document.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem('userEmail')) {
+                userEmail = localStorage.getItem('userEmail');
+                document.getElementById('userEmailDisplay').textContent = userEmail;
+                document.getElementById('welcome').style.display = 'block';
+                document.getElementById('payButton').style.display = 'block';
+                loadItems();
+                loadOrderHistory();
+            }
+        });
     </script>
 </body>
+
 </html>
