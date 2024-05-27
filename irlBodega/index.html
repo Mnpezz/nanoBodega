@@ -203,13 +203,23 @@
                 margin-left: 20px;
             }
         }
+         .red-button {
+                background-color: red;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                font-size: 16px;
+            }
     </style>
 </head>
 
 <body>
     <div id="header">
-        <h1>Nano Point of Sale</h1>
+        <h1>Nano Bodega - Point of Sale</h1>
         <button id="loginButton">Sign In with Nano</button>
+        <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
+
     </div>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
@@ -306,9 +316,6 @@
             </tbody>
         </table>
     </div>
-        <footer>
-        <p>Thank you for using nano bodega. <br> this is the point of sale version 0.2</p>
-        </footer>
 
     <script>
         let userAddress = null;
@@ -323,11 +330,11 @@
 
         document.getElementById('loginButton').addEventListener('click', function () {
             NanoPay.open({
-                title: "Nano Bodega Point of Sale",
-                address: '@mnpezz',
-                amount: 0.00001,
+                title: "Nano Bodega - Point of Sale",
+                address: "@mnpezz",
+                amount: 0.0001,
                 success: (block) => {
-                    userAddress = block.username || block.address;
+                    userAddress = block.address;
                     document.getElementById('loginButton').style.display = 'none';
                     loadEmail();
                     if (!userEmail) {
@@ -507,6 +514,50 @@
                 document.body.classList.add('dark-mode');
             }
         }
+
+    function clearData() {
+            // Ask for confirmation
+            const confirmClear = confirm("Are you sure you want to clear all data? This action cannot be undone.");
+
+            // If confirmed, clear data
+            if (confirmClear) {
+                // Clear local storage
+                localStorage.clear();
+
+                // Reset user email and nano address
+                userEmail = null;
+                userAddress = null;
+                document.getElementById('userEmailDisplay').textContent = '';
+                document.getElementById('userAddress').textContent = '';
+
+                // Reset items data
+                const defaultItems = [
+                    { description: 'Item 1', price: '0.10', image: 'https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn' },
+                    { description: 'Item 2', price: '0.20', image: 'https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn' },
+                    { description: 'Item 3', price: '0.15', image: 'https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn' },
+                    { description: 'Item 4', price: '0.25', image: 'https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn' }
+                ];
+                const itemElements = document.querySelectorAll('.item');
+                itemElements.forEach((itemElement, index) => {
+                    itemElement.querySelector('img').src = defaultItems[index].image;
+                    itemElement.querySelector('.description').textContent = defaultItems[index].description;
+                    itemElement.querySelector('.price').textContent = defaultItems[index].price;
+                });
+
+                // Reset total amount
+                totalAmount = 0.00;
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+
+                // Clear order history
+                document.getElementById('orderHistoryBody').innerHTML = '';
+
+                // Show the "Sign In with Nano" button again
+                document.getElementById('loginButton').style.display = 'block';
+            }
+        }
+
+        // Attach event listener to the clear data button
+        document.getElementById("clearDataButton").addEventListener("click", clearData);
 
         // Event Listener for dom load
         document.addEventListener("DOMContentLoaded", () => {
