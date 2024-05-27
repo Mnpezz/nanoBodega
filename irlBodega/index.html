@@ -3,42 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano calulator and items point of sale</title>
+    <title>Nano Calculator and Items Point of Sale</title>
     <script src="https://pay.nano.to/latest.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
+            margin-top: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        #header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        #loginButton {
+            font-size: 1em;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+        }
+        #loginButton:hover {
+            background-color: #0056b3;
         }
         #welcome, #emailForm {
             display: none;
+            text-align: center;
+            margin-bottom: 20px;
         }
-        #items, #calculator {
+        #content {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+        }
+        #items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
             margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
         }
         .item {
-            margin: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
         }
         .item img {
             width: 100px;
             height: 100px;
+            border-radius: 8px;
         }
         .item:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        .item p {
-            margin: 0;
-            font-size: 1.2em;
+        .edit-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .edit-container input[type="file"], .edit-container input[type="text"], .edit-container input[type="number"] {
+            font-size: 1em;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            padding: 5px;
+            width: 80%;
         }
         #calculator {
-            display: flex;
             flex-direction: column;
             align-items: center;
             margin-top: 20px;
@@ -58,6 +96,14 @@
             margin: 5px;
             width: 50px;
             height: 50px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .calc-button:hover {
+            background-color: #0056b3;
         }
         #total {
             font-size: 2em;
@@ -66,87 +112,172 @@
         button, input[type="email"] {
             font-size: 1.5em;
             margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        button {
+            background-color: #28a745;
+            color: #fff;
+        }
+        button:hover {
+            background-color: #218838;
         }
         #payButton {
-            margin-top: 20px;
             display: none;
+            margin-top: 20px;
+        }
+        .userAddress {
+            word-wrap: break-word;
+            width: 90%;
+            margin: 0 auto;
+            display: inline-block;
+        }
+        #orderHistory {
+            margin-top: 40px;
+            width: 80%;
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
         }
-        #plusbutton, #minusbutton {    
-            width: 80px;
+        #orderHistory h2 {
+            margin-bottom: 10px;
+        }
+        #orderHistory table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #orderHistory th, #orderHistory td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        #orderHistory th {
+            background-color: #f2f2f2;
+        }
+        @media (min-width: 768px) {
+            #content {
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: flex-start;
+            }
+            #calculator {
+                margin-left: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Nano Point of Sale Website</h1>
-    <button id="loginButton">Sign In with Nano</button>
+    <div id="header">
+        <h1>Nano Point of Sale</h1>
+        <button id="loginButton">Sign In with Nano</button>
+    </div>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
-        <input type="email" id="userEmail" required>
+        <input type="email" id="userEmail" placeholder="Enter your email" required>
         <button onclick="submitEmail()">Submit</button>
     </div>
     <div id="welcome">
-        <h2>Hello <span id="userEmailDisplay"></span>. <br> Your nano address is <span id="userAddress"></span></h2>
+        <h2>Hello <span id="userEmailDisplay"></span>.</h2>
+        <h2>Your nano address is <br><span id="userAddress" class="userAddress"></span></h2>
     </div>
-    <div id="items">
-        <div class="item" onclick="addItem(0.10)">
-            <img src="https://via.placeholder.com/100" alt="Item 1">
-            <p>Item 1 - $0.10</p>
+    <div id="content">
+        <div id="items">
+            <div class="item" data-price="0.10">
+                <img src="https://via.placeholder.com/100" alt="Item 1" id="item1Image">
+                <p contenteditable="true" class="description">Item 1</p>
+                <p>$<span class="price" contenteditable="true">0.10</span></p>
+                <div class="edit-container">
+                    <input type="file" id="uploadItem1" class="uploadPhoto" onchange="updateItemPhoto(event, 'item1Image')">
+                </div>
+                <button onclick="addItem(this)">Add to Total</button>
+            </div>
+            <div class="item" data-price="0.20">
+                <img src="https://via.placeholder.com/100" alt="Item 2" id="item2Image">
+                <p contenteditable="true" class="description">Item 2</p>
+                <p>$<span class="price" contenteditable="true">0.20</span></p>
+                <div class="edit-container">
+                    <input type="file" id="uploadItem2" class="uploadPhoto" onchange="updateItemPhoto(event, 'item2Image')">
+                </div>
+                <button onclick="addItem(this)">Add to Total</button>
+            </div>
+            <div class="item" data-price="0.15">
+                <img src="https://via.placeholder.com/100" alt="Item 3" id="item3Image">
+                <p contenteditable="true" class="description">Item 3</p>
+                <p>$<span class="price" contenteditable="true">0.15</span></p>
+                <div class="edit-container">
+                    <input type="file" id="uploadItem3" class="uploadPhoto" onchange="updateItemPhoto(event, 'item3Image')">
+                </div>
+                <button onclick="addItem(this)">Add to Total</button>
+            </div>
+            <div class="item" data-price="0.25">
+                <img src="https://via.placeholder.com/100" alt="Item 4" id="item4Image">
+                <p contenteditable="true" class="description">Item 4</p>
+                <p>$<span class="price" contenteditable="true">0.25</span></p>
+                <div class="edit-container">
+                    <input type="file" id="uploadItem4" class="uploadPhoto" onchange="updateItemPhoto(event, 'item4Image')">
+                </div>
+                <button onclick="addItem(this)">Add to Total</button>
+            </div>
         </div>
-        <div class="item" onclick="addItem(0.20)">
-            <img src="https://via.placeholder.com/100" alt="Item 2">
-            <p>Item 2 - $0.20</p>
+        <div id="calculator">
+            <input type="text" id="calcDisplay" value="0" readonly>
+            <div class="calc-row">
+                <input type="button" class="calc-button" value="1" onclick="appendNumber(1)">
+                <input type="button" class="calc-button" value="2" onclick="appendNumber(2)">
+                <input type="button" class="calc-button" value="3" onclick="appendNumber(3)">
+            </div>
+            <div class="calc-row">
+                <input type="button" class="calc-button" value="4" onclick="appendNumber(4)">
+                <input type="button" class="calc-button" value="5" onclick="appendNumber(5)">
+                <input type="button" class="calc-button" value="6" onclick="appendNumber(6)">
+            </div>
+            <div class="calc-row">
+                <input type="button" class="calc-button" value="7" onclick="appendNumber(7)">
+                <input type="button" class="calc-button" value="8" onclick="appendNumber(8)">
+                <input type="button" class="calc-button" value="9" onclick="appendNumber(9)">
+            </div>
+            <div class="calc-row">
+                <input type="button" class="calc-button" value="." onclick="appendNumber('.')">
+                <input type="button" class="calc-button" value="0" onclick="appendNumber(0)">
+                <button class="calc-button" onclick="clearDisplay()">C</button>
+            </div>
+            <div class="calc-row">
+                <button id="plusbutton" class="calc-button" onclick="addToTotal()">+</button>
+                <button id="minusbutton" class="calc-button" onclick="subtractFromTotal()">-</button>
+            </div>
         </div>
-        <div class="item" onclick="addItem(0.15)">
-            <img src="https://via.placeholder.com/100" alt="Item 3">
-            <p>Item 3 - $0.15</p>
-        </div>
-        <div class="item" onclick="addItem(0.25)">
-            <img src="https://via.placeholder.com/100" alt="Item 4">
-            <p>Item 4 - $0.25</p>
-        </div>
-    </div>
-    <div id="calculator">
-        <input type="text" id="calcDisplay" value="0" readonly>
-        <div class="calc-row">
-            <input type="button" class="calc-button" value="1" onclick="appendNumber(1)">
-            <input type="button" class="calc-button" value="2" onclick="appendNumber(2)">
-            <input type="button" class="calc-button" value="3" onclick="appendNumber(3)">
-            
-        </div>
-        <div class="calc-row">
-            <input type="button" class="calc-button" value="4" onclick="appendNumber(4)">
-            <input type="button" class="calc-button" value="5" onclick="appendNumber(5)">
-            <input type="button" class="calc-button" value="6" onclick="appendNumber(6)">
-        </div>
-        <div class="calc-row">
-            <input type="button" class="calc-button" value="7" onclick="appendNumber(7)">
-            <input type="button" class="calc-button" value="8" onclick="appendNumber(8)">
-            <input type="button" class="calc-button" value="9" onclick="appendNumber(9)">
-        </div>
-        <div class="calc-row">
-            <input type="button" class="calc-button" value="." onclick="appendNumber('.')">
-            <input type="button" class="calc-button" value="0" onclick="appendNumber(0)">
-<button class="calc-button" onclick="clearDisplay()">C</button>
-            
-        </div>
-<div class="calc-row">
-<button id="plusbutton" class="calc-button" onclick="addToTotal()">+</button>
-<button id="minusbutton" class="calc-button" onclick="subtractFromTotal()">-</button>
-</div>
-        
     </div>
     <div id="total">
         Total: $<span id="totalAmount">0.00</span>
     </div>
     <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
+    <div id="orderHistory">
+        <h2>Order History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="orderHistoryBody">
+                <!-- Order history will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
         let userAddress = null;
         let userEmail = null;
         let totalAmount = 0.00;
         let buffer = '';
+        let orderId = 1;
 
         document.getElementById('loginButton').addEventListener('click', function() {
             NanoPay.open({ 
@@ -156,7 +287,16 @@
                 success: (block) => {
                     userAddress = block.username || block.address;
                     document.getElementById('loginButton').style.display = 'none';
-                    document.getElementById('emailForm').style.display = 'block';
+                    loadEmail();
+                    if (!userEmail) {
+                        document.getElementById('emailForm').style.display = 'block';
+                    } else {
+                        document.getElementById('userEmailDisplay').textContent = userEmail;
+                        document.getElementById('userAddress').textContent = userAddress;
+                        document.getElementById('welcome').style.display = 'block';
+                        document.getElementById('payButton').style.display = 'block';
+                        loadOrderHistory();
+                    }
                 }
             });
         });
@@ -169,12 +309,19 @@
                 document.getElementById('emailForm').style.display = 'none';
                 document.getElementById('welcome').style.display = 'block';
                 document.getElementById('payButton').style.display = 'block';
+                saveOrderHistory();
+                saveEmail();
             }
         }
 
-        function addItem(price) {
-            totalAmount += price;
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+        function addItem(button) {
+            const item = button.closest('.item');
+            const priceElement = item.querySelector('.price');
+            const price = parseFloat(priceElement.textContent);
+            if (!isNaN(price)) {
+                totalAmount += price;
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            }
         }
 
         function appendNumber(number) {
@@ -194,18 +341,22 @@
 
         function addToTotal() {
             const amount = parseFloat(buffer);
-            totalAmount += amount;
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            if (!isNaN(amount)) {
+                totalAmount += amount;
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            }
             clearDisplay();
         }
 
         function subtractFromTotal() {
             const amount = parseFloat(buffer);
-            totalAmount -= amount;
-            if (totalAmount < 0) {
-                totalAmount = 0;
+            if (!isNaN(amount)) {
+                totalAmount -= amount;
+                if (totalAmount < 0) {
+                    totalAmount = 0;
+                }
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
             }
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
             clearDisplay();
         }
 
@@ -224,16 +375,56 @@
                 success: (block) => {
                     console.log(block);
                     // Handle successful payment here
+                    addOrderToHistory(orderId++, new Date().toLocaleString(), totalAmount);
                     // Reset total amount to 0 after successful payment
                     totalAmount = 0.00;
                     document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                    saveOrderHistory();
                 },
                 cancel: () => {
                     console.log("User cancelled");
                 }
             });
         }
+
+        function updateItemPhoto(event, imgId) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const img = document.getElementById(imgId);
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function addOrderToHistory(orderId, date, amount) {
+            const tableBody = document.getElementById('orderHistoryBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${orderId}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
+            tableBody.appendChild(row);
+        }
+
+        function saveOrderHistory() {
+            const orderHistory = document.getElementById('orderHistoryBody').innerHTML;
+            localStorage.setItem('orderHistory', orderHistory);
+        }
+
+        function loadOrderHistory() {
+            const orderHistory = localStorage.getItem('orderHistory');
+            if (orderHistory) {
+                document.getElementById('orderHistoryBody').innerHTML = orderHistory;
+            }
+        }
+
+        function saveEmail() {
+            localStorage.setItem('userEmail', userEmail);
+        }
+
+        function loadEmail() {
+            userEmail = localStorage.getItem('userEmail');
+            if (userEmail) {
+                document.getElementById('userEmailDisplay').textContent = userEmail;
+            }
+        }
     </script>
 </body>
 </html>
-
