@@ -261,7 +261,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Order ID</th>
+                    <th>Customer Nano Address</th>
                     <th>Date</th>
                     <th>Amount</th>
                 </tr>
@@ -277,11 +277,12 @@
         let userEmail = null;
         let totalAmount = 0.00;
         let buffer = '';
-        let orderId = 1;
+        let payeeAddress = null;
+        
 
         document.getElementById('loginButton').addEventListener('click', function() {
             NanoPay.open({ 
-                title: "Login to the nano point of sale",
+                title: "Nano Bodega Point of Sale",
                 address: '@mnpezz', // Your App's Address
                 amount: 0.00001, // Small Amount
                 success: (block) => {
@@ -373,19 +374,21 @@
                 ],
                 note: userEmail,
                 success: (block) => {
-                    console.log(block);
-                    // Handle successful payment here
-                    addOrderToHistory(orderId++, new Date().toLocaleString(), totalAmount);
-                    // Reset total amount to 0 after successful payment
-                    totalAmount = 0.00;
-                    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-                    saveOrderHistory();
-                },
-                cancel: () => {
-                    console.log("User cancelled");
-                }
-            });
-        }
+                console.log(block);
+                // Extract and store the payee's Nano address
+                payeeAddress = block.address; // Store the payee's address
+                // Handle successful payment here
+                addOrderToHistory(payeeAddress, new Date().toLocaleString(), totalAmount);
+                // Reset total amount to 0 after successful payment
+                totalAmount = 0.00;
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                saveOrderHistory();
+            },
+            cancel: () => {
+                console.log("User cancelled");
+            }
+        });
+    }
 
         function updateItemPhoto(event, imgId) {
             const reader = new FileReader();
@@ -396,10 +399,10 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        function addOrderToHistory(orderId, date, amount) {
+        function addOrderToHistory(payeeAddress, date, amount) {
             const tableBody = document.getElementById('orderHistoryBody');
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${orderId}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
+            row.innerHTML = `<td>${payeeAddress}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
             tableBody.appendChild(row);
         }
 
