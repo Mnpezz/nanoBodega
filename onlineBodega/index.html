@@ -1,146 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Calculator and Items Point of Sale</title>
+    <title>Nano E-commerce Website</title>
     <script src="https://pay.nano.to/latest.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin-top: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        body.dark-mode {
-            background-color: #333;
-            color: #f4f4f9;
-        }
-        #header {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-        }
-        #loginButton {
-            font-size: 1em;
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            background-color: #007bff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
             color: #fff;
         }
-        #loginButton:hover {
-            background-color: #0056b3;
+        h1 {
+            margin-top: 30px;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        #welcome, #emailForm {
+        #loginButton, #submitEmailButton, #payButton {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 20px;
+            background-color: #fff;
+            color: #0072ff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #loginButton:hover, #submitEmailButton:hover, #payButton:hover {
+            background-color: #0072ff;
+            color: #fff;
+        }
+        #welcome, #emailForm, #items, #checkout, #cart {
             display: none;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        #content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         #items {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
             margin-top: 20px;
-            width: 100%;
-            max-width: 800px;
         }
         .item {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
+            margin: 20px;
+            padding: 15px;
             text-align: center;
+            background: #008B8B;
+            border-radius: 10px;
             transition: transform 0.3s, box-shadow 0.3s;
-        }
-        body.dark-mode .item {
-            background-color: #444;
-            border-color: #555;
+            min-width: 180px;
         }
         .item img {
             width: 100px;
             height: 100px;
-            border-radius: 8px;
+            border-radius: 10px;
         }
         .item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        .edit-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .edit-container input[type="file"],
-        .edit-container input[type="text"],
-        .edit-container input[type="number"] {
-            font-size: 1em;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            padding: 5px;
-            width: 80%;
-        }
-        #calculator {
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        #calcDisplay {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            width: 150px;
-            text-align: right;
-        }
-        .calc-row {
-            display: flex;
-            justify-content: center;
-        }
-        .calc-button {
-            font-size: 1.5em;
-            margin: 5px;
-            width: 50px;
-            height: 50px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .calc-button:hover {
-            background-color: #0056b3;
+        .item p {
+            margin: 10px 0 0;
+            font-size: 1.2em;
         }
         #total {
-            text-align: center;
             font-size: 2em;
-            margin-top: 20px;
+            margin: 20px;
+            font-weight: bold;
         }
-        button,
         input[type="email"] {
             font-size: 1.5em;
-            margin: 5px;
             padding: 10px;
+            margin: 10px;
+            border: 1px solid #0072ff;
             border-radius: 5px;
+            text-align: center;
+        }
+        #cart {
+            margin: 20px;
+            padding: 20px;
+            background: #0072ff;
+            border-radius: 10px;
+            text-align: left;
+        }
+        #cart h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        #cart ul {
+            list-style: none;
+            padding: 0;
+        }
+        #cart ul li {
+            font-size: 1.2em;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #cart ul li span {
+            margin: 0 10px;
+        }
+        .removeButton {
+            background-color: #ff4c4c;
+            color: white;
             border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        button {
-            background-color: #28a745;
-            color: #fff;
+        .removeButton:hover {
+            background-color: #ff0000;
         }
-        button:hover {
-            background-color: #218838;
-        }
-        #payButton {
-            display: none;
-            width: 200px;
-            margin: 0 auto;
+        .quantity {
+            width: 50px;
+            text-align: center;
         }
         .userAddress {
             word-wrap: break-word;
@@ -148,294 +126,68 @@
             margin: 0 auto;
             display: inline-block;
         }
-        #orderHistory {
-            margin-top: 40px;
-            width: 80%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        body.dark-mode #orderHistory {
-            background-color: #444;
-            border-color: #555;
-        }
-        #orderHistory h2 {
-            margin-bottom: 10px;
-        }
-        #orderHistory table {
-            width: 100%;
-            table-layout: auto; /* Ensure the table layout adapts automatically */
-            border-collapse: collapse; /* Necessary for styling */
-        }
-        #orderHistory th, #orderHistory td {
-            min-width: 100px;
-            border: 1px solid #ddd;
-            padding: 8px;
-            word-break: break-word; /* Ensure long words break correctly */
-            white-space: normal;    /* Allow text to wrap to multiple lines */
-        }
-
-        .payeeAddress {
-            word-break: break-word; /* Ensure long words break correctly */
-            white-space: normal;    /* Allow text to wrap to multiple lines */
-            display: block;         /* Ensures the content behaves like a block for wrapping */
-            width: 100%;            /* Ensures full width usage for wrapping */
-        }
-        #orderHistory th {
-            background-color: #f2f2f2;
-        }
-        body.dark-mode #orderHistory th,
-        body.dark-mode #orderHistory td {
-            background-color: #555;
-            border-color: #666;
-        }
-        @media (min-width: 768px) {
-            #content {
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: flex-start;
-            }
-            #calculator {
-                margin-left: 20px;
-            }
-        }
-         .red-button {
-                background-color: red;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                font-size: 16px;
-            }
     </style>
 </head>
-
 <body>
-    <div id="header">
-        <h1>Nano Bodega - Point of Sale</h1>
-        <button id="loginButton">Sign In with Nano</button>
-        <button onclick="createNewItem()">Add New Item</button>
-        <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
-
-    </div>
+    <h1>Nano webstore</h1>
+    <button id="loginButton">Sign In with Nano</button>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
-        <input type="email" id="userEmail" placeholder="Enter your email" required>
-        <button onclick="submitEmail()">Submit</button>
+        <input type="email" id="userEmail" placeholder="Your email address" required>
+        <button id="submitEmailButton" onclick="submitEmail()">Submit</button>
     </div>
     <div id="welcome">
-        <h2>Hello, <span id="userEmailDisplay"></span>.</h2>
-        <h2>Your nano address is: <br><span id="userAddress" class="userAddress"></span></h2>
-    </div>
-    <div id="content">
-        <div id="items">
-            <div class="item" data-price="0.10">
-                <img src="https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn" alt="Item 1" id="item1Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 1</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.10</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem1" class="uploadPhoto" onchange="updateItemPhoto(event, 'item1Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.20">
-                <img src="https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn" alt="Item 2" id="item2Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 2</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.20</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem2" class="uploadPhoto" onchange="updateItemPhoto(event, 'item2Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.15">
-                <img src="https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn" alt="Item 3" id="item3Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 3</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.15</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem3" class="uploadPhoto" onchange="updateItemPhoto(event, 'item3Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.25">
-                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="Item 4" id="item4Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 4</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem4" class="uploadPhoto" onchange="updateItemPhoto(event, 'item4Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-        </div>
-
-        <div id="calculator">
-            <input type="text" id="calcDisplay" value="0" readonly>
-            <div class="calc-row">
-                <input type="button" class="calc-button" value="1" onclick="appendNumber(1)">
-                <input type="button" class="calc-button" value="2" onclick="appendNumber(2)">
-                <input type="button" class="calc-button" value="3" onclick="appendNumber(3)">
-            </div>
-            <div class="calc-row">
-                <input type="button" class="calc-button" value="4" onclick="appendNumber(4)">
-                <input type="button" class="calc-button" value="5" onclick="appendNumber(5)">
-                <input type="button" class="calc-button" value="6" onclick="appendNumber(6)">
-            </div>
-            <div class="calc-row">
-                <input type="button" class="calc-button" value="7" onclick="appendNumber(7)">
-                <input type="button" class="calc-button" value="8" onclick="appendNumber(8)">
-                <input type="button" class="calc-button" value="9" onclick="appendNumber(9)">
-            </div>
-            <div class="calc-row">
-                <input type="button" class="calc-button" value="." onclick="appendNumber('.')">
-                <input type="button" class="calc-button" value="0" onclick="appendNumber(0)">
-                <button class="calc-button" onclick="clearDisplay()">C</button>
-            </div>
-            <div class="calc-row">
-                <button id="plusbutton" class="calc-button" onclick="addToTotal()">+</button>
-                <button id="minusbutton" class="calc-button" onclick="subtractFromTotal()">-</button>
-            </div>
-        </div>
+        <h2>Hello <span id="userEmailDisplay"></span>.<br>Your nano address is <span id="userAddress" class="userAddress"></span></h2>
     </div>
     <div id="total">
         Total: $<span id="totalAmount">0.00</span>
     </div>
-    <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
-    <div id="orderHistory">
-        <h2>Order History</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Customer Nano Address</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody id="orderHistoryBody">
-                <!-- Order history will be dynamically added here -->
-            </tbody>
-        </table>
+    <div id="items">
+        <div class="item" onclick="addItem('Sand Lizard', 0.01)">
+            <img src="https://imgs.search.brave.com/Wf0TLYbGUya4uqdg0PZ2pbp_er7u7v8K5NGLAgAyLXQ/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvNTA4/NDk2NzUyL3Bob3Rv/L2dlY2tvLW9uLWxl/YWYuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPXZNQjMwdjRK/bVo1clF6bTA2ZnA1/M2pYbnhSZkdRSnVS/OHhzYzVLdFBwX0U9" alt="Sand Lizard">
+            <p>Sand Lizard - $0.01</p>
+        </div>
+        <div class="item" onclick="addItem('Grass Lizard', 0.02)">
+            <img src="https://imgs.search.brave.com/nkSlveBPZNVeSmLElals4oFpcmtj9A1no_Hu44-HZVA/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTY2/MjU3MDM4L3Bob3Rv/L2RheS1nZWNrby5q/cGc_cz02MTJ4NjEy/Jnc9MCZrPTIwJmM9/eXJ5N2lpRFdoM002/b1FoNjJQSjktVlBj/eWRPdVJwTHhtb21r/NmpWSlhoWT0" alt="Grass Lizard">
+            <p>Grass Lizard - $0.02</p>
+        </div>
+        <div class="item" onclick="addItem('Rock Lizard', 0.03)">
+            <img src="https://imgs.search.brave.com/OZ-BsDeI5vemUfJt5spRYMfzSNa1pZd-mV75jntZoDg/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvYTAw/NDctMDAwMTU5L3Bo/b3RvL2xlb3BhcmQt/Z2Vja28uanBnP3M9/NjEyeDYxMiZ3PTAm/az0yMCZjPTZyTmlX/eEUxMTJQMTJzOHRX/My1Ja0daNjNubFVk/V3dJQ01BN1JnNWZi/dDQ9" alt="Rock Lizard">
+            <p>Rock Lizard - $0.03</p>
+        </div>
+        <div class="item" onclick="addItem('Big Lizard', 0.04)">
+            <img src="https://imgs.search.brave.com/YoM7lVH_NuO9ThlPByMZYlWK4J9I2X8HTJLsyAFTQ-k/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTM0/NjM4MTc2MS9waG90/by9saXphcmQtaW4t/dGhlLWp1bmdsZS5q/cGc_cz02MTJ4NjEy/Jnc9MCZrPTIwJmM9/Y3NQakpna3BEUGxO/R043Z0tFUkNPV05U/M3FpVzJBdmFoRHNp/MlJXVXN2dz0" alt="Big Lizard">
+            <p>Big Lizard - $0.04</p>
+        </div>
+    </div>
+    
+    <div id="cart">
+        <h2>Shopping Cart</h2>
+        <ul id="cartItems"></ul>
+    </div>
+
+    <div id="checkout">
+        <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
     </div>
 
     <script>
         let userAddress = null;
         let userEmail = null;
         let totalAmount = 0.00;
-        let buffer = '';
-        let payeeAddress = null;
+        let cartItems = [];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            applyTheme();
-        });
-
-        document.getElementById('loginButton').addEventListener('click', function () {
-            NanoPay.open({
-                title: "Nano Bodega - Point of Sale",
-                address: "@mnpezz",
-                amount: 0.0001,
+        document.getElementById('loginButton').addEventListener('click', function() {
+            NanoPay.open({ 
+                title: "Nano Storefront",
+                address: '@mnpezz', // Your App's Address
+                amount: 0.00001, // Small Amount
                 success: (block) => {
-                    userAddress = block.address;
+                    userAddress = block.username || block.address;
                     document.getElementById('loginButton').style.display = 'none';
-                    loadEmail();
-                    if (!userEmail) {
-                        document.getElementById('emailForm').style.display = 'block';
-                    } else {
-                        document.getElementById('userEmailDisplay').textContent = userEmail;
-                        document.getElementById('userAddress').textContent = userAddress;
-                        document.getElementById('welcome').style.display = 'block';
-                        document.getElementById('payButton').style.display = 'block';
-                        loadOrderHistory();
-                    }
+                    document.getElementById('emailForm').style.display = 'block';
                 }
             });
         });
-
-// Function to create a new item
-        function createNewItem() {
-            const itemsContainer = document.getElementById('items');
-
-            // Create a new item element
-            const newItem = document.createElement('div');
-            newItem.classList.add('item');
-            newItem.dataset.price = '0.25'; // Set the default price
-
-            // Customize the content of the new item
-            newItem.innerHTML = `
-                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="New Item" class="item-image">
-                <p contenteditable="true" class="description" onblur="saveItems()">New Item</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
-                <div class="edit-container">
-                    <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            `;
-
-            // Append the new item to the items container
-            itemsContainer.appendChild(newItem);
-
-            // Save the items to local storage
-            saveItems();
-        }
-
-        // Function to add item to total
-        function addItem(button) {
-            // Your existing addItem function goes here
-            // This function adds the item to the total as you did before
-        }
-
-        // Function to save items to local storage
-        function saveItems() {
-            const itemsContainer = document.getElementById('items');
-            const items = itemsContainer.querySelectorAll('.item');
-
-            const itemsData = [];
-
-            items.forEach((item, index) => {
-                const description = item.querySelector('.description').textContent;
-                const price = item.querySelector('.price').textContent;
-                const imgSrc = item.querySelector('.item-image').src;
-                itemsData.push({ description, price, imgSrc });
-            });
-
-            // Save the items data to local storage
-            localStorage.setItem('items', JSON.stringify(itemsData));
-        }
-
-        // Function to load items from local storage
-        function loadItems() {
-            const itemsContainer = document.getElementById('items');
-            const savedItems = localStorage.getItem('items');
-
-            if (savedItems) {
-                const itemsData = JSON.parse(savedItems);
-
-                itemsData.forEach(data => {
-                    const newItem = document.createElement('div');
-                    newItem.classList.add('item');
-                    newItem.dataset.price = data.price;
-
-                    newItem.innerHTML = `
-                        <img src="${data.imgSrc}" alt="${data.description}" class="item-image">
-                        <p contenteditable="true" class="description" onblur="saveItems()">${data.description}</p>
-                        <p>$<span class="price" contenteditable="true" onblur="saveItems()">${data.price}</span></p>
-                        <div class="edit-container">
-                            <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
-                        </div>
-                        <button onclick="addItem(this)">Add to Total</button>
-                    `;
-
-                    itemsContainer.appendChild(newItem);
-                });
-            }
-        }
-
-        // Call loadItems function to load items from local storage on page load
-        loadItems();
-
-        // Other functions like updateItemPhoto, etc., go here
-
 
         function submitEmail() {
             userEmail = document.getElementById('userEmail').value;
@@ -444,200 +196,84 @@
                 document.getElementById('userAddress').textContent = userAddress;
                 document.getElementById('emailForm').style.display = 'none';
                 document.getElementById('welcome').style.display = 'block';
-                document.getElementById('payButton').style.display = 'block';
-                saveOrderHistory();
-                saveEmail();
-                saveItems();
+                document.getElementById('items').style.display = 'flex';
+                document.getElementById('cart').style.display = 'block';
+                document.getElementById('checkout').style.display = 'block';
             }
         }
 
-        function addItem(button) {
-            const item = button.closest('.item');
-            const priceElement = item.querySelector('.price');
-            const price = parseFloat(priceElement.textContent);
-            if (!isNaN(price)) {
-                totalAmount += price;
-                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-            }
-        }
-
-        function appendNumber(number) {
-            const display = document.getElementById('calcDisplay');
-            if (display.value === '0') {
-                display.value = number;
+        function addItem(name, price) {
+            totalAmount += price;
+            const itemIndex = cartItems.findIndex(item => item.name === name);
+            if (itemIndex > -1) {
+                cartItems[itemIndex].quantity += 1;
             } else {
-                display.value += number;
+                cartItems.push({ name, price, quantity: 1 });
             }
-            buffer = display.value;
+            updateCart();
         }
 
-        function clearDisplay() {
-            document.getElementById('calcDisplay').value = '0';
-            buffer = '';
+        function updateCart() {
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            const cartItemsList = document.getElementById('cartItems');
+            cartItemsList.innerHTML = '';
+            cartItems.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${item.name} - $${item.price.toFixed(2)} x 
+                    <input type="number" class="quantity" value="${item.quantity}" min="1" onchange="updateQuantity(${index}, this.value)">
+                    <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    <button class="removeButton" onclick="removeItem(${index})">X</button>
+                `;
+                cartItemsList.appendChild(li);
+            });
         }
 
-        function addToTotal() {
-            const amount = parseFloat(buffer);
-            if (!isNaN(amount)) {
-                totalAmount += amount;
-                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-            }
-            clearDisplay();
+        function updateQuantity(index, quantity) {
+            const item = cartItems[index];
+            const oldTotal = item.price * item.quantity;
+            item.quantity = parseInt(quantity, 10);
+            const newTotal = item.price * item.quantity;
+            totalAmount += (newTotal - oldTotal);
+            updateCart();
         }
 
-        function subtractFromTotal() {
-            const amount = parseFloat(buffer);
-            if (!isNaN(amount)) {
-                totalAmount -= amount;
-                if (totalAmount < 0) {
-                    totalAmount = 0;
-                }
-                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-            }
-            clearDisplay();
+        function removeItem(index) {
+            const item = cartItems[index];
+            totalAmount -= item.price * item.quantity;
+            cartItems.splice(index, 1);
+            updateCart();
         }
 
         function initiatePayment() {
             NanoPay.open({
                 title: "Payment",
-                address: userAddress,
-                notify: userEmail,
-                contact: false,
-                shipping: false,
-                currency: 'USD',
-                line_items: [
-                    { name: "Total Purchase", price: totalAmount }
-                ],
-                note: userEmail,
+                address: '@mnpezz', //Recipient Address
+                notify: 'epxksjki@sharklasers.com', // Admin's email for notification
+                contact: userEmail, // User's email
+                email: userEmail, // prefill user's email'
+                shipping: false, // Shipping true=free
+                currency: 'USD', // Currency type
+                line_items: cartItems.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price.toFixed(2)
+                })),
+                note: "Thank you for shopping with us",
                 success: (block) => {
-                    payeeAddress = block.address;
-                    addOrderToHistory(payeeAddress, new Date().toLocaleString(), totalAmount);
+                    console.log(block);
                     totalAmount = 0.00;
+                    cartItems = [];
                     document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-                    saveOrderHistory();
+                    document.getElementById('cartItems').innerHTML = '';
+                    alert("Payment successful! Thank you for your purchase.");
                 },
                 cancel: () => {
-                    console.log("User cancelled");
+                    console.log("User cancelled the payment.");
+                    alert("Payment was cancelled. Please try again.");
                 }
             });
         }
-
-        function updateItemPhoto(event, imgId) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const img = document.getElementById(imgId);
-                img.src = reader.result;
-                saveItems();
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        function addOrderToHistory(payeeAddress, date, amount) {
-            const tableBody = document.getElementById('orderHistoryBody');
-            const existingDateHeader = Array.from(tableBody.children).find(row => row.className === 'date-header' && row.textContent.includes(date.split(',')[0]));
-            if (!existingDateHeader) {
-                const dateHeader = document.createElement('tr');
-                dateHeader.className = 'date-header';
-                dateHeader.innerHTML = `<td colspan="3"><strong>${date.split(',')[0]}</strong></td>`;
-                tableBody.appendChild(dateHeader);
-            }
-            const row = document.createElement('tr');
-            row.innerHTML = `<td class="payeeAddress">${payeeAddress}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
-            tableBody.appendChild(row);
-        }
-
-        function saveOrderHistory() {
-            const orderHistory = document.getElementById('orderHistoryBody').innerHTML;
-            localStorage.setItem(`orderHistory_${userEmail}`, orderHistory);
-        }
-
-        function loadOrderHistory() {
-            const orderHistory = localStorage.getItem(`orderHistory_${userEmail}`);
-            if (orderHistory) {
-                document.getElementById('orderHistoryBody').innerHTML = orderHistory;
-            }
-        }
-
-        function saveEmail() {
-            localStorage.setItem('userEmail', userEmail);
-        }
-
-        function loadEmail() {
-            userEmail            = localStorage.getItem('userEmail');
-            if (userEmail) {
-                document.getElementById('userEmailDisplay').textContent = userEmail;
-            }
-        }
-
-        function saveItems() {
-            const items = document.querySelectorAll('.item');
-            const itemsData = [];
-            items.forEach(item => {
-                const description = item.querySelector('.description').textContent;
-                const price = item.querySelector('.price').textContent;
-                const imgSrc = item.querySelector('img').src;
-                itemsData.push({ description, price, imgSrc });
-            });
-            localStorage.setItem(`items_${userEmail}`, JSON.stringify(itemsData));
-        }
-
-        function loadItems() {
-            const itemsData = JSON.parse(localStorage.getItem(`items_${userEmail}`));
-            if (itemsData) {
-                const items = document.querySelectorAll('.item');
-                itemsData.forEach((data, index) => {
-                    if (items[index]) {
-                        items[index].querySelector('.description').textContent = data.description;
-                        items[index].querySelector('.price').textContent = data.price;
-                        items[index].querySelector('img').src = data.imgSrc;
-                    }
-                });
-            }
-        }
-
-        function applyTheme() {
-            const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-            }
-        }
-
-function clearData() {
-    // Ask for confirmation
-    const confirmClear = confirm("Are you sure you want to clear all data? This action cannot be undone.");
-
-    // If confirmed, clear data
-    if (confirmClear) {
-        // Clear local storage for additional items
-        localStorage.removeItem('items');
-
-        // Reset user email and nano address
-        userEmail = null;
-        userAddress = null;
-        document.getElementById('userEmailDisplay').textContent = '';
-        document.getElementById('userAddress').textContent = '';
-
-        // Reload the page to reset to default state
-        location.reload();
-    }
-}
-
-
-        // Attach event listener to the clear data button
-        document.getElementById("clearDataButton").addEventListener("click", clearData);
-
-        // Event Listener for dom load
-        document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem('userEmail')) {
-                userEmail = localStorage.getItem('userEmail');
-                document.getElementById('userEmailDisplay').textContent = userEmail;
-                document.getElementById('welcome').style.display = 'block';
-                document.getElementById('payButton').style.display = 'block';
-                loadItems();
-                loadOrderHistory();
-            }
-        });
     </script>
 </body>
-
 </html>
