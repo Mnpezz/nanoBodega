@@ -22,6 +22,13 @@
             justify-content: space-between;
             padding: 20px;
         }
+        #payButton {
+            background-color: #007bff;
+            color: #fff;
+            display: none;
+            width: 200px;
+            margin: 0 auto;
+        }
         #loginButton {
             font-size: 1em;
             padding: 10px;
@@ -31,7 +38,7 @@
             background-color: #007bff;
             color: #fff;
         }
-        #loginButton:hover {
+        #loginButton:hover, #payButton:hover {
             background-color: #0056b3;
         }
         #welcome, #emailForm {
@@ -140,11 +147,6 @@
         button:hover {
             background-color: #218838;
         }
-        #payButton {
-            display: none;
-            width: 200px;
-            margin: 0 auto;
-        }
         .userAddress {
             word-wrap: break-word;
             width: 90%;
@@ -212,6 +214,9 @@
                 padding: 10px 20px;
                 cursor: pointer;
                 font-size: 16px;
+            }
+           .red-button:hover {
+            background-color: darkred;
             }
     </style>
 </head>
