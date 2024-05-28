@@ -297,13 +297,22 @@
             { description: 'Item 4', price: '0.25', imgSrc: 'https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn' }
         ];
 
-        document.addEventListener("DOMContentLoaded", () => {
+            document.addEventListener("DOMContentLoaded", () => {
                 applyTheme();
                 loadEmail();
                 loadAddress(); // Load address from local storage
                 initializeItems();
                 loadOrderHistory();
+                loadTotalAmount(); // Add this line to load total amount
             });
+
+        function loadTotalAmount() {
+            const savedTotal = localStorage.getItem('totalAmount');
+            if (savedTotal) {
+                totalAmount = parseFloat(savedTotal);
+                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+            }
+        }
 
 
         function initializeItems() {
@@ -410,8 +419,10 @@
             if (!isNaN(price)) {
                 totalAmount += price;
                 document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                localStorage.setItem('totalAmount', totalAmount.toFixed(2)); // Save totalAmount
             }
         }
+
 
         function appendNumber(number) {
             const display = document.getElementById('calcDisplay');
@@ -433,9 +444,11 @@
             if (!isNaN(amount)) {
                 totalAmount += amount;
                 document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                localStorage.setItem('totalAmount', totalAmount.toFixed(2)); // Save totalAmount
             }
             clearDisplay();
         }
+
 
         function subtractFromTotal() {
             const amount = parseFloat(buffer);
@@ -445,9 +458,11 @@
                     totalAmount = 0;
                 }
                 document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+                localStorage.setItem('totalAmount', totalAmount.toFixed(2)); // Save totalAmount
             }
             clearDisplay();
         }
+
 
         function initiatePayment() {
             NanoPay.open({
@@ -517,12 +532,14 @@
             }
         }
 
-            document.getElementById('clearDataButton').addEventListener('click', () => {
-                if (confirm("Are you sure you want to clear all data?")) {
-                    localStorage.clear();
-                    location.reload();
-                }
-            });
+        document.getElementById('clearDataButton').addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.clear();
+                localStorage.removeItem('totalAmount'); // Add this line
+                location.reload();
+            }
+        });
+
 
 
         const loginButton = document.getElementById("loginButton");
