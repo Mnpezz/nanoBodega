@@ -218,6 +218,7 @@
     <div id="header">
         <h1>Nano Bodega - Point of Sale</h1>
         <button id="loginButton">Sign In with Nano</button>
+        <button onclick="createNewItem()">Add New Item</button>
         <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
 
     </div>
@@ -269,6 +270,7 @@
                 <button onclick="addItem(this)">Add to Total</button>
             </div>
         </div>
+
         <div id="calculator">
             <input type="text" id="calcDisplay" value="0" readonly>
             <div class="calc-row">
@@ -349,6 +351,91 @@
                 }
             });
         });
+
+// Function to create a new item
+        function createNewItem() {
+            const itemsContainer = document.getElementById('items');
+
+            // Create a new item element
+            const newItem = document.createElement('div');
+            newItem.classList.add('item');
+            newItem.dataset.price = '0.25'; // Set the default price
+
+            // Customize the content of the new item
+            newItem.innerHTML = `
+                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="New Item" class="item-image">
+                <p contenteditable="true" class="description" onblur="saveItems()">New Item</p>
+                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
+                <div class="edit-container">
+                    <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
+                </div>
+                <button onclick="addItem(this)">Add to Total</button>
+            `;
+
+            // Append the new item to the items container
+            itemsContainer.appendChild(newItem);
+
+            // Save the items to local storage
+            saveItems();
+        }
+
+        // Function to add item to total
+        function addItem(button) {
+            // Your existing addItem function goes here
+            // This function adds the item to the total as you did before
+        }
+
+        // Function to save items to local storage
+        function saveItems() {
+            const itemsContainer = document.getElementById('items');
+            const items = itemsContainer.querySelectorAll('.item');
+
+            const itemsData = [];
+
+            items.forEach((item, index) => {
+                const description = item.querySelector('.description').textContent;
+                const price = item.querySelector('.price').textContent;
+                const imgSrc = item.querySelector('.item-image').src;
+                itemsData.push({ description, price, imgSrc });
+            });
+
+            // Save the items data to local storage
+            localStorage.setItem('items', JSON.stringify(itemsData));
+        }
+
+        // Function to load items from local storage
+        function loadItems() {
+            const itemsContainer = document.getElementById('items');
+            const savedItems = localStorage.getItem('items');
+
+            if (savedItems) {
+                const itemsData = JSON.parse(savedItems);
+
+                itemsData.forEach(data => {
+                    const newItem = document.createElement('div');
+                    newItem.classList.add('item');
+                    newItem.dataset.price = data.price;
+
+                    newItem.innerHTML = `
+                        <img src="${data.imgSrc}" alt="${data.description}" class="item-image">
+                        <p contenteditable="true" class="description" onblur="saveItems()">${data.description}</p>
+                        <p>$<span class="price" contenteditable="true" onblur="saveItems()">${data.price}</span></p>
+                        <div class="edit-container">
+                            <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
+                        </div>
+                        <button onclick="addItem(this)">Add to Total</button>
+                    `;
+
+                    itemsContainer.appendChild(newItem);
+                });
+            }
+        }
+
+        // Call loadItems function to load items from local storage on page load
+        loadItems();
+
+        // Other functions like updateItemPhoto, etc., go here
+
 
         function submitEmail() {
             userEmail = document.getElementById('userEmail').value;
@@ -515,61 +602,59 @@
             }
         }
 
-    function clearData() {
-            // Ask for confirmation
-            const confirmClear = confirm("Are you sure you want to clear all data? This action cannot be undone.");
+function clearData() {
+    // Ask for confirmation
+    const confirmClear = confirm("Are you sure you want to clear all data? This action cannot be undone.");
 
-            // If confirmed, clear data
-            if (confirmClear) {
-                // Clear local storage
-                localStorage.clear();
+    // If confirmed, clear data
+    if (confirmClear) {
+        // Clear local storage for additional items and user email
+        localStorage.removeItem('items');
+        localStorage.removeItem('userEmail');
 
-                // Reset user email and nano address
-                userEmail = null;
-                userAddress = null;
-                document.getElementById('userEmailDisplay').textContent = '';
-                document.getElementById('userAddress').textContent = '';
+        // Reset user email and nano address
+        userEmail = null;
+        userAddress = null;
+        document.getElementById('userEmailDisplay').textContent = '';
+        document.getElementById('userAddress').textContent = '';
 
-                // Reset items data
-                const defaultItems = [
-                    { description: 'Item 1', price: '0.10', image: 'https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn' },
-                    { description: 'Item 2', price: '0.20', image: 'https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn' },
-                    { description: 'Item 3', price: '0.15', image: 'https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn' },
-                    { description: 'Item 4', price: '0.25', image: 'https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn' }
-                ];
-                const itemElements = document.querySelectorAll('.item');
-                itemElements.forEach((itemElement, index) => {
-                    itemElement.querySelector('img').src = defaultItems[index].image;
-                    itemElement.querySelector('.description').textContent = defaultItems[index].description;
-                    itemElement.querySelector('.price').textContent = defaultItems[index].price;
-                });
+        // Reset items to their default state
+        const defaultItems = [
+            { img: "https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn", description: "Item 1", price: "0.10" },
+            { img: "https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn", description: "Item 2", price: "0.20" },
+            { img: "https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn", description: "Item 3", price: "0.15" },
+            { img: "https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn", description: "Item 4", price: "0.25" }
+        ];
 
-                // Reset total amount
-                totalAmount = 0.00;
-                document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-
-                // Clear order history
-                document.getElementById('orderHistoryBody').innerHTML = '';
-
-                // Show the "Sign In with Nano" button again
-                document.getElementById('loginButton').style.display = 'block';
-            }
-        }
-
-        // Attach event listener to the clear data button
-        document.getElementById("clearDataButton").addEventListener("click", clearData);
-
-        // Event Listener for dom load
-        document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem('userEmail')) {
-                userEmail = localStorage.getItem('userEmail');
-                document.getElementById('userEmailDisplay').textContent = userEmail;
-                document.getElementById('welcome').style.display = 'block';
-                document.getElementById('payButton').style.display = 'block';
-                loadItems();
-                loadOrderHistory();
-            }
+        const items = document.querySelectorAll('.item');
+        items.forEach((item, index) => {
+            const defaultItem = defaultItems[index];
+            item.querySelector('img').src = defaultItem.img;
+            item.querySelector('.description').textContent = defaultItem.description;
+            item.querySelector('.price').textContent = defaultItem.price;
         });
+
+        // Hide welcome message and payment button, show email form
+        document.getElementById('welcome').style.display = 'none';
+        document.getElementById('payButton').style.display = 'none';
+        document.getElementById('emailForm').style.display = 'block';
+    }
+}
+
+// Attach event listener to the clear data button
+document.getElementById("clearDataButton").addEventListener("click", clearData);
+
+// Event Listener for dom load
+document.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem('userEmail')) {
+        userEmail = localStorage.getItem('userEmail');
+        document.getElementById('userEmailDisplay').textContent = userEmail;
+        document.getElementById('welcome').style.display = 'block';
+        document.getElementById('payButton').style.display = 'block';
+        loadItems();
+        loadOrderHistory();
+    }
+});
     </script>
 </body>
 
