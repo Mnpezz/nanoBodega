@@ -298,11 +298,13 @@
         ];
 
         document.addEventListener("DOMContentLoaded", () => {
-            applyTheme();
-            loadEmail();
-            initializeItems();
-            loadOrderHistory();
-        });
+                applyTheme();
+                loadEmail();
+                loadAddress(); // Load address from local storage
+                initializeItems();
+                loadOrderHistory();
+            });
+
 
         function initializeItems() {
             let savedItems = localStorage.getItem('items');
@@ -515,35 +517,60 @@
             }
         }
 
-        document.getElementById('clearDataButton').addEventListener('click', () => {
-            if (confirm("Are you sure you want to clear all data?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        });
-
-        const loginButton = document.getElementById("loginButton");
-        loginButton.addEventListener("click", () => {
-            NanoPay.open({
-                title: "Nano Bodega - Point of Sale",
-                address: "@mnpezz",
-                amount: 0.0001,
-                 success: (block) => {
-                    userAddress = block.address;
-                    document.getElementById('loginButton').style.display = 'none';
-                    loadEmail();
-                    if (!userEmail) {
-                        document.getElementById('emailForm').style.display = 'block';
-                    } else {
-                        document.getElementById('userEmailDisplay').textContent = userEmail;
-                        document.getElementById('userAddress').textContent = userAddress;
-                        document.getElementById('welcome').style.display = 'block';
-                        document.getElementById('payButton').style.display = 'block';
-                        loadOrderHistory();
-                    }
+            document.getElementById('clearDataButton').addEventListener('click', () => {
+                if (confirm("Are you sure you want to clear all data?")) {
+                    localStorage.clear();
+                    location.reload();
                 }
             });
-        });
+
+
+        const loginButton = document.getElementById("loginButton");
+            loginButton.addEventListener("click", () => {
+                NanoPay.open({
+                    title: "Nano Bodega - Point of Sale",
+                    address: "@mnpezz",
+                    amount: 0.0001,
+                    success: (block) => {
+                        userAddress = block.address;
+                        saveAddress();  // Save address to local storage
+                        document.getElementById('loginButton').style.display = 'none';
+                        loadEmail();
+                        if (!userEmail) {
+                            document.getElementById('emailForm').style.display = 'block';
+                        } else {
+                            document.getElementById('userEmailDisplay').textContent = userEmail;
+                            document.getElementById('userAddress').textContent = userAddress;
+                            document.getElementById('welcome').style.display = 'block';
+                            document.getElementById('payButton').style.display = 'block';
+                            loadOrderHistory();
+                        }
+                    }
+                });
+            });
+
+            function saveAddress() {
+                localStorage.setItem('userAddress', userAddress);
+            }
+
+        function loadAddress() {
+            const savedAddress = localStorage.getItem('userAddress');
+            if (savedAddress) {
+                userAddress = savedAddress;
+                document.getElementById('loginButton').style.display = 'none';
+                loadEmail();
+                if (!userEmail) {
+                    document.getElementById('emailForm').style.display = 'block';
+                } else {
+                    document.getElementById('userEmailDisplay').textContent = userEmail;
+                    document.getElementById('userAddress').textContent = userAddress;
+                    document.getElementById('welcome').style.display = 'block';
+                    document.getElementById('payButton').style.display = 'block';
+                    loadOrderHistory();
+                }
+            }
+        }
+
     </script>
 </body>
 
