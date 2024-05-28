@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nano Calculator and Items Point of Sale</title>
     <script src="https://pay.nano.to/latest.js"></script>
-    <style>
+ <style>
         body {
             font-family: Arial, sans-serif;
             margin-top: 20px;
@@ -78,6 +78,7 @@
             flex-direction: column;
             align-items: center;
         }
+
         .edit-container input[type="file"],
         .edit-container input[type="text"],
         .edit-container input[type="number"] {
@@ -86,7 +87,9 @@
             margin-bottom: 10px;
             padding: 5px;
             width: 80%;
+            display: none;
         }
+
         #calculator {
             flex-direction: column;
             align-items: center;
@@ -150,14 +153,14 @@
         }
         #orderHistory {
             margin-top: 40px;
-            width: 80%;
-            max-width: 800px;
+            width: 90%;
+            max-width: 1000px;
             margin-left: auto;
             margin-right: auto;
             background-color: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 20px;
+            padding: 10px;
         }
         body.dark-mode #orderHistory {
             background-color: #444;
@@ -172,7 +175,6 @@
             border-collapse: collapse; /* Necessary for styling */
         }
         #orderHistory th, #orderHistory td {
-            min-width: 100px;
             border: 1px solid #ddd;
             padding: 8px;
             word-break: break-word; /* Ensure long words break correctly */
@@ -218,9 +220,12 @@
     <div id="header">
         <h1>Nano Bodega - Point of Sale</h1>
         <button id="loginButton">Sign In with Nano</button>
+        <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
         <button onclick="createNewItem()">Add New Item</button>
         <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
-
+        <div id="total">
+        Total: $<span id="totalAmount">0.00</span>
+        </div>
     </div>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
@@ -232,45 +237,7 @@
         <h2>Your nano address is: <br><span id="userAddress" class="userAddress"></span></h2>
     </div>
     <div id="content">
-        <div id="items">
-            <div class="item" data-price="0.10">
-                <img src="https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn" alt="Item 1" id="item1Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 1</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.10</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem1" class="uploadPhoto" onchange="updateItemPhoto(event, 'item1Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.20">
-                <img src="https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn" alt="Item 2" id="item2Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 2</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.20</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem2" class="uploadPhoto" onchange="updateItemPhoto(event, 'item2Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.15">
-                <img src="https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn" alt="Item 3" id="item3Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 3</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.15</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem3" class="uploadPhoto" onchange="updateItemPhoto(event, 'item3Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-            <div class="item" data-price="0.25">
-                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="Item 4" id="item4Image">
-                <p contenteditable="true" class="description" onblur="saveItems()">Item 4</p>
-                <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
-                <div class="edit-container">
-                    <input type="file" id="uploadItem4" class="uploadPhoto" onchange="updateItemPhoto(event, 'item4Image')">
-                </div>
-                <button onclick="addItem(this)">Add to Total</button>
-            </div>
-        </div>
-
+        <div id="items"></div>
         <div id="calculator">
             <input type="text" id="calcDisplay" value="0" readonly>
             <div class="calc-row">
@@ -299,16 +266,13 @@
             </div>
         </div>
     </div>
-    <div id="total">
-        Total: $<span id="totalAmount">0.00</span>
-    </div>
-    <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
+    
     <div id="orderHistory">
         <h2>Order History</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Customer Nano Address</th>
+                    <th>Address</th>
                     <th>Date</th>
                     <th>Amount</th>
                 </tr>
@@ -326,116 +290,103 @@
         let buffer = '';
         let payeeAddress = null;
 
+        const defaultItems = [
+            { description: 'Item 1', price: '0.10', imgSrc: 'https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn' },
+            { description: 'Item 2', price: '0.20', imgSrc: 'https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn' },
+            { description: 'Item 3', price: '0.15', imgSrc: 'https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn' },
+            { description: 'Item 4', price: '0.25', imgSrc: 'https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn' }
+        ];
+
         document.addEventListener("DOMContentLoaded", () => {
             applyTheme();
+            loadEmail();
+            initializeItems();
+            loadOrderHistory();
         });
 
-        document.getElementById('loginButton').addEventListener('click', function () {
-            NanoPay.open({
-                title: "Nano Bodega - Point of Sale",
-                address: "@mnpezz",
-                amount: 0.0001,
-                success: (block) => {
-                    userAddress = block.address;
-                    document.getElementById('loginButton').style.display = 'none';
-                    loadEmail();
-                    if (!userEmail) {
-                        document.getElementById('emailForm').style.display = 'block';
-                    } else {
-                        document.getElementById('userEmailDisplay').textContent = userEmail;
-                        document.getElementById('userAddress').textContent = userAddress;
-                        document.getElementById('welcome').style.display = 'block';
-                        document.getElementById('payButton').style.display = 'block';
-                        loadOrderHistory();
-                    }
-                }
+        function initializeItems() {
+            let savedItems = localStorage.getItem('items');
+            if (!savedItems) {
+                localStorage.setItem('items', JSON.stringify(defaultItems));
+                savedItems = JSON.stringify(defaultItems);
+            }
+            loadItems(JSON.parse(savedItems));
+        }
+
+       function loadItems(itemsData) {
+            const itemsContainer = document.getElementById('items');
+            itemsContainer.innerHTML = ''; // Clear the container to avoid duplicates
+            itemsData.forEach((data, index) => {
+                const newItem = document.createElement('div');
+                newItem.classList.add('item');
+                newItem.dataset.price = data.price;
+                const imgId = `item${index + 1}Image`;
+                newItem.innerHTML = `
+                    <img src="${data.imgSrc}" alt="${data.description}" id="${imgId}" class="item-image">
+                    <p contenteditable="true" class="description" onblur="saveItems()">${data.description}</p>
+                    <p>$<span class="price" contenteditable="true" onblur="saveItems()">${data.price}</span></p>
+                    <div class="edit-container">
+                        <input type="file" class="uploadPhoto" id="fileInput${index}" onchange="updateItemPhoto(event, '${imgId}')">
+                    </div>
+                    <button onclick="addItem(this)">Add to Total</button>
+                `;
+                itemsContainer.appendChild(newItem);
+
+                // Add click event to image to trigger file input
+                document.getElementById(imgId).addEventListener('click', () => {
+                    document.getElementById(`fileInput${index}`).click();
+                });
             });
-        });
+        }
 
-// Function to create a new item
         function createNewItem() {
             const itemsContainer = document.getElementById('items');
-
-            // Create a new item element
+            const newIndex = itemsContainer.children.length;
+            const imgId = `item${newIndex}Image`;
             const newItem = document.createElement('div');
             newItem.classList.add('item');
-            newItem.dataset.price = '0.25'; // Set the default price
-
-            // Customize the content of the new item
+            newItem.dataset.price = '0.25';
             newItem.innerHTML = `
-                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="New Item" class="item-image">
+                <img src="https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn" alt="New Item" id="${imgId}" class="item-image">
                 <p contenteditable="true" class="description" onblur="saveItems()">New Item</p>
                 <p>$<span class="price" contenteditable="true" onblur="saveItems()">0.25</span></p>
                 <div class="edit-container">
-                    <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
+                    <input type="file" class="uploadPhoto" id="fileInput${newIndex}" onchange="updateItemPhoto(event, '${imgId}')">
                 </div>
                 <button onclick="addItem(this)">Add to Total</button>
             `;
-
-            // Append the new item to the items container
             itemsContainer.appendChild(newItem);
 
-            // Save the items to local storage
+            // Add click event to image to trigger file input
+            document.getElementById(imgId).addEventListener('click', () => {
+                document.getElementById(`fileInput${newIndex}`).click();
+            });
+
             saveItems();
         }
 
-        // Function to add item to total
-        function addItem(button) {
-            // Your existing addItem function goes here
-            // This function adds the item to the total as you did before
+                function updateItemPhoto(event, imgId) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById(imgId).src = e.target.result;
+                saveItems();
+            };
+            reader.readAsDataURL(file);
         }
 
-        // Function to save items to local storage
         function saveItems() {
             const itemsContainer = document.getElementById('items');
             const items = itemsContainer.querySelectorAll('.item');
-
             const itemsData = [];
-
-            items.forEach((item, index) => {
+            items.forEach(item => {
                 const description = item.querySelector('.description').textContent;
                 const price = item.querySelector('.price').textContent;
-                const imgSrc = item.querySelector('.item-image').src;
+                const imgSrc = item.querySelector('img').src;
                 itemsData.push({ description, price, imgSrc });
             });
-
-            // Save the items data to local storage
             localStorage.setItem('items', JSON.stringify(itemsData));
         }
-
-        // Function to load items from local storage
-        function loadItems() {
-            const itemsContainer = document.getElementById('items');
-            const savedItems = localStorage.getItem('items');
-
-            if (savedItems) {
-                const itemsData = JSON.parse(savedItems);
-
-                itemsData.forEach(data => {
-                    const newItem = document.createElement('div');
-                    newItem.classList.add('item');
-                    newItem.dataset.price = data.price;
-
-                    newItem.innerHTML = `
-                        <img src="${data.imgSrc}" alt="${data.description}" class="item-image">
-                        <p contenteditable="true" class="description" onblur="saveItems()">${data.description}</p>
-                        <p>$<span class="price" contenteditable="true" onblur="saveItems()">${data.price}</span></p>
-                        <div class="edit-container">
-                            <input type="file" class="uploadPhoto" onchange="updateItemPhoto(event, 'item${itemsContainer.children.length + 1}Image')">
-                        </div>
-                        <button onclick="addItem(this)">Add to Total</button>
-                    `;
-
-                    itemsContainer.appendChild(newItem);
-                });
-            }
-        }
-
-        // Call loadItems function to load items from local storage on page load
-        loadItems();
-
-        // Other functions like updateItemPhoto, etc., go here
-
 
         function submitEmail() {
             userEmail = document.getElementById('userEmail').value;
@@ -445,9 +396,8 @@
                 document.getElementById('emailForm').style.display = 'none';
                 document.getElementById('welcome').style.display = 'block';
                 document.getElementById('payButton').style.display = 'block';
-                saveOrderHistory();
                 saveEmail();
-                saveItems();
+                saveOrderHistory();
             }
         }
 
@@ -512,50 +462,34 @@
                 success: (block) => {
                     payeeAddress = block.address;
                     addOrderToHistory(payeeAddress, new Date().toLocaleString(), totalAmount);
-                    totalAmount = 0.00;
+                    totalAmount = 0;
                     document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-                    saveOrderHistory();
                 },
                 cancel: () => {
-                    console.log("User cancelled");
+                    console.log("Payment cancelled");
                 }
             });
         }
 
-        function updateItemPhoto(event, imgId) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const img = document.getElementById(imgId);
-                img.src = reader.result;
-                saveItems();
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-
-        function addOrderToHistory(payeeAddress, date, amount) {
-            const tableBody = document.getElementById('orderHistoryBody');
-            const existingDateHeader = Array.from(tableBody.children).find(row => row.className === 'date-header' && row.textContent.includes(date.split(',')[0]));
-            if (!existingDateHeader) {
-                const dateHeader = document.createElement('tr');
-                dateHeader.className = 'date-header';
-                dateHeader.innerHTML = `<td colspan="3"><strong>${date.split(',')[0]}</strong></td>`;
-                tableBody.appendChild(dateHeader);
-            }
-            const row = document.createElement('tr');
-            row.innerHTML = `<td class="payeeAddress">${payeeAddress}</td><td>${date}</td><td>$${amount.toFixed(2)}</td>`;
-            tableBody.appendChild(row);
-        }
-
         function saveOrderHistory() {
-            const orderHistory = document.getElementById('orderHistoryBody').innerHTML;
-            localStorage.setItem(`orderHistory_${userEmail}`, orderHistory);
+            const orderHistory = document.getElementById('orderHistory').innerHTML;
+            localStorage.setItem('orderHistory', orderHistory);
         }
 
         function loadOrderHistory() {
-            const orderHistory = localStorage.getItem(`orderHistory_${userEmail}`);
-            if (orderHistory) {
-                document.getElementById('orderHistoryBody').innerHTML = orderHistory;
+            const savedOrderHistory = localStorage.getItem('orderHistory');
+            if (savedOrderHistory) {
+                document.getElementById('orderHistory').innerHTML = savedOrderHistory;
             }
+        }
+
+        function addOrderToHistory(address, timestamp, amount) {
+            const orderHistory = document.getElementById('orderHistory');
+            const newOrder = document.createElement('div');
+            newOrder.classList.add('order');
+            newOrder.innerHTML = `<p> <a href="https://nano.community/${address}" target="_blank">${address}</a> on ${timestamp} for $${amount.toFixed(2)}</p>`;
+            orderHistory.appendChild(newOrder);
+            saveOrderHistory();
         }
 
         function saveEmail() {
@@ -563,35 +497,14 @@
         }
 
         function loadEmail() {
-            userEmail            = localStorage.getItem('userEmail');
-            if (userEmail) {
+            const savedEmail = localStorage.getItem('userEmail');
+            if (savedEmail) {
+                userEmail = savedEmail;
                 document.getElementById('userEmailDisplay').textContent = userEmail;
-            }
-        }
-
-        function saveItems() {
-            const items = document.querySelectorAll('.item');
-            const itemsData = [];
-            items.forEach(item => {
-                const description = item.querySelector('.description').textContent;
-                const price = item.querySelector('.price').textContent;
-                const imgSrc = item.querySelector('img').src;
-                itemsData.push({ description, price, imgSrc });
-            });
-            localStorage.setItem(`items_${userEmail}`, JSON.stringify(itemsData));
-        }
-
-        function loadItems() {
-            const itemsData = JSON.parse(localStorage.getItem(`items_${userEmail}`));
-            if (itemsData) {
-                const items = document.querySelectorAll('.item');
-                itemsData.forEach((data, index) => {
-                    if (items[index]) {
-                        items[index].querySelector('.description').textContent = data.description;
-                        items[index].querySelector('.price').textContent = data.price;
-                        items[index].querySelector('img').src = data.imgSrc;
-                    }
-                });
+                document.getElementById('userAddress').textContent = userAddress;
+                document.getElementById('emailForm').style.display = 'none';
+                document.getElementById('welcome').style.display = 'block';
+                document.getElementById('payButton').style.display = 'block';
             }
         }
 
@@ -602,59 +515,35 @@
             }
         }
 
-function clearData() {
-    // Ask for confirmation
-    const confirmClear = confirm("Are you sure you want to clear all data? This action cannot be undone.");
-
-    // If confirmed, clear data
-    if (confirmClear) {
-        // Clear local storage for additional items and user email
-        localStorage.removeItem('items');
-        localStorage.removeItem('userEmail');
-
-        // Reset user email and nano address
-        userEmail = null;
-        userAddress = null;
-        document.getElementById('userEmailDisplay').textContent = '';
-        document.getElementById('userAddress').textContent = '';
-
-        // Reset items to their default state
-        const defaultItems = [
-            { img: "https://th.bing.com/th/id/OIG2.C1UDEAwUp1Ob4hDSjHGN?pid=ImgGn", description: "Item 1", price: "0.10" },
-            { img: "https://th.bing.com/th/id/OIG2.Jx2G2lJJ128HjkJ_JF2L?pid=ImgGn", description: "Item 2", price: "0.20" },
-            { img: "https://th.bing.com/th/id/OIG2.jNAK18P7MA46tThzQ6x0?pid=ImgGn", description: "Item 3", price: "0.15" },
-            { img: "https://th.bing.com/th/id/OIG1.mkMsD36cHFxbPysY6uma?pid=ImgGn", description: "Item 4", price: "0.25" }
-        ];
-
-        const items = document.querySelectorAll('.item');
-        items.forEach((item, index) => {
-            const defaultItem = defaultItems[index];
-            item.querySelector('img').src = defaultItem.img;
-            item.querySelector('.description').textContent = defaultItem.description;
-            item.querySelector('.price').textContent = defaultItem.price;
+        document.getElementById('clearDataButton').addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.clear();
+                location.reload();
+            }
         });
 
-        // Hide welcome message and payment button, show email form
-        document.getElementById('welcome').style.display = 'none';
-        document.getElementById('payButton').style.display = 'none';
-        document.getElementById('emailForm').style.display = 'block';
-    }
-}
-
-// Attach event listener to the clear data button
-document.getElementById("clearDataButton").addEventListener("click", clearData);
-
-// Event Listener for dom load
-document.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem('userEmail')) {
-        userEmail = localStorage.getItem('userEmail');
-        document.getElementById('userEmailDisplay').textContent = userEmail;
-        document.getElementById('welcome').style.display = 'block';
-        document.getElementById('payButton').style.display = 'block';
-        loadItems();
-        loadOrderHistory();
-    }
-});
+        const loginButton = document.getElementById("loginButton");
+        loginButton.addEventListener("click", () => {
+            NanoPay.open({
+                title: "Nano Bodega - Point of Sale",
+                address: "@mnpezz",
+                amount: 0.0001,
+                 success: (block) => {
+                    userAddress = block.address;
+                    document.getElementById('loginButton').style.display = 'none';
+                    loadEmail();
+                    if (!userEmail) {
+                        document.getElementById('emailForm').style.display = 'block';
+                    } else {
+                        document.getElementById('userEmailDisplay').textContent = userEmail;
+                        document.getElementById('userAddress').textContent = userAddress;
+                        document.getElementById('welcome').style.display = 'block';
+                        document.getElementById('payButton').style.display = 'block';
+                        loadOrderHistory();
+                    }
+                }
+            });
+        });
     </script>
 </body>
 
