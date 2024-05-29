@@ -20,10 +20,10 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        #loginButton, #submitEmailButton, #payButton {
+        button {
             font-size: 1.5em;
             padding: 10px 20px;
-            margin: 20px;
+            margin: 5px;
             background-color: #fff;
             color: #0072ff;
             border: none;
@@ -31,7 +31,7 @@
             cursor: pointer;
             transition: background-color 0.3s, color 0.3s;
         }
-        #loginButton:hover, #submitEmailButton:hover, #payButton:hover {
+        button:hover {
             background-color: #0072ff;
             color: #fff;
         }
@@ -120,17 +120,65 @@
             width: 50px;
             text-align: center;
         }
-        .userAddress {
+        .userAddress, #popupAddress {
             word-wrap: break-word;
             width: 90%;
             margin: 0 auto;
             display: inline-block;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 9;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .popup-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: left;
+            color: #000;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h2 {
+            margin: 0;
         }
     </style>
 </head>
 <body>
     <h1>Nano webstore</h1>
     <button id="loginButton">Sign In with Nano</button>
+    <div id="checkout">
+        <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
+    </div>
+    <button id="accountDetailsButton"">Account Details</button>
+    <button id="signOutButton" style="display: none;" onclick="signOut()">Sign Out</button>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
         <input type="email" id="userEmail" placeholder="Your email address" required>
@@ -139,9 +187,7 @@
     <div id="welcome">
         <h2>Hello <span id="userEmailDisplay"></span>.<br>Your nano address is <span id="userAddress" class="userAddress"></span></h2>
     </div>
-    <div id="total">
-        Total: $<span id="totalAmount">0.00</span>
-    </div>
+    
     <div id="items">
         <div class="item" onclick="addItem('Sand Lizard', 0.01)">
             <img src="https://imgs.search.brave.com/Wf0TLYbGUya4uqdg0PZ2pbp_er7u7v8K5NGLAgAyLXQ/rs:fit:860:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvNTA4/NDk2NzUyL3Bob3Rv/L2dlY2tvLW9uLWxl/YWYuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPXZNQjMwdjRK/bVo1clF6bTA2ZnA1/M2pYbnhSZkdRSnVS/OHhzYzVLdFBwX0U9" alt="Sand Lizard">
@@ -162,19 +208,38 @@
     </div>
     
     <div id="cart">
-        <h2>Shopping Cart</h2>
+        <div class="cart-header">
+            <h2>Shopping Cart</h2>
+            <div id="total">
+            Total: $<span id="totalAmount">0.00</span>
+        </div>
+            <button class="red-button" onclick="resetTotal()">Reset All Items</button>
+        </div>
         <ul id="cartItems"></ul>
     </div>
 
-    <div id="checkout">
-        <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
+
+    <div id="accountPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h2>Account Details</h2>
+            <p>Email: <span id="popupEmail"></span></p>
+            <p>Nano Address: <span id="popupAddress"></span></p>
+        </div>
     </div>
 
     <script>
-        let userAddress = null;
-        let userEmail = null;
-        let totalAmount = 0.00;
-        let cartItems = [];
+        let userAddress = localStorage.getItem('userAddress') || null;
+        let userEmail = localStorage.getItem('userEmail') || null;
+        let totalAmount = parseFloat(localStorage.getItem('totalAmount')) || 0.00;
+        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (userAddress && userEmail) {
+                showLoggedInState();
+            }
+            updateCart();
+        });
 
         document.getElementById('loginButton').addEventListener('click', function() {
             NanoPay.open({ 
@@ -183,8 +248,11 @@
                 amount: 0.00001, // Small Amount
                 success: (block) => {
                     userAddress = block.username || block.address;
+                    localStorage.setItem('userAddress', userAddress);
                     document.getElementById('loginButton').style.display = 'none';
                     document.getElementById('emailForm').style.display = 'block';
+                    document.getElementById('accountDetailsButton').style.display = 'block';
+                    document.getElementById('signOutButton').style.display = 'block';
                 }
             });
         });
@@ -192,14 +260,20 @@
         function submitEmail() {
             userEmail = document.getElementById('userEmail').value;
             if (userEmail) {
-                document.getElementById('userEmailDisplay').textContent = userEmail;
-                document.getElementById('userAddress').textContent = userAddress;
-                document.getElementById('emailForm').style.display = 'none';
-                document.getElementById('welcome').style.display = 'block';
-                document.getElementById('items').style.display = 'flex';
-                document.getElementById('cart').style.display = 'block';
-                document.getElementById('checkout').style.display = 'block';
+                localStorage.setItem('userEmail', userEmail);
+                showLoggedInState();
             }
+        }
+
+        function showLoggedInState() {
+            document.getElementById('loginButton').style.display = 'none';
+            document.getElementById('userEmailDisplay').textContent = userEmail;
+            document.getElementById('userAddress').textContent = userAddress;
+            document.getElementById('emailForm').style.display = 'none';
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('items').style.display = 'flex';
+            document.getElementById('cart').style.display = 'block';
+            document.getElementById('checkout').style.display = 'block';
         }
 
         function addItem(name, price) {
@@ -210,6 +284,8 @@
             } else {
                 cartItems.push({ name, price, quantity: 1 });
             }
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            localStorage.setItem('totalAmount', totalAmount.toFixed(2));
             updateCart();
         }
 
@@ -235,6 +311,8 @@
             item.quantity = parseInt(quantity, 10);
             const newTotal = item.price * item.quantity;
             totalAmount += (newTotal - oldTotal);
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            localStorage.setItem('totalAmount', totalAmount.toFixed(2));
             updateCart();
         }
 
@@ -242,6 +320,16 @@
             const item = cartItems[index];
             totalAmount -= item.price * item.quantity;
             cartItems.splice(index, 1);
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            localStorage.setItem('totalAmount', totalAmount.toFixed(2));
+            updateCart();
+        }
+
+        function resetTotal() {
+            totalAmount = 0.00;
+            cartItems = [];
+            localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            localStorage.setItem('totalAmount', totalAmount.toFixed(2));
             updateCart();
         }
 
@@ -251,7 +339,7 @@
                 address: '@mnpezz', //Recipient Address
                 notify: 'epxksjki@sharklasers.com', // Admin's email for notification
                 contact: userEmail, // User's email
-                email: userEmail, // prefill user's email'
+                email: userEmail, // prefill user's email
                 shipping: false, // Shipping true=free
                 currency: 'USD', // Currency type
                 line_items: cartItems.map(item => ({
@@ -262,10 +350,7 @@
                 note: "Thank you for shopping with us",
                 success: (block) => {
                     console.log(block);
-                    totalAmount = 0.00;
-                    cartItems = [];
-                    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-                    document.getElementById('cartItems').innerHTML = '';
+                    resetTotal();
                     alert("Payment successful! Thank you for your purchase.");
                 },
                 cancel: () => {
@@ -274,6 +359,38 @@
                 }
             });
         }
+
+        function showPopup() {
+            document.getElementById('popupEmail').textContent = userEmail;
+            document.getElementById('popupAddress').textContent = userAddress;
+            document.getElementById('accountPopup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('accountPopup').style.display = 'none';
+        }
+
+        function signOut() {
+            localStorage.removeItem('userAddress');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('totalAmount');
+            userAddress = null;
+            userEmail = null;
+            totalAmount = 0.00;
+            cartItems = [];
+            document.getElementById('loginButton').style.display = 'block';
+            document.getElementById('accountDetailsButton').style.display = 'block';
+            document.getElementById('signOutButton').style.display = 'none';
+            document.getElementById('emailForm').style.display = 'none';
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('items').style.display = 'flex';
+            document.getElementById('cart').style.display = 'block';
+            document.getElementById('checkout').style.display = 'none';
+            updateCart();
+        }
+
+        document.getElementById('accountDetailsButton').addEventListener('click', showPopup);
     </script>
 </body>
 </html>
