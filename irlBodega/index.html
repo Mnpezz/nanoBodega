@@ -26,7 +26,12 @@
             background-color: #007bff;
             color: #fff;
             display: none;
-
+        }
+        #accountDetailsButton {
+        background-color: orange;        
+        }
+         #accountDetailsButton:hover {
+        background-color: darkorange;        
         }
         #loginButton {
             font-size: 1em;
@@ -146,7 +151,7 @@
         button:hover {
             background-color: #218838;
         }
-        .userAddress {
+        .userAddress, #popupAddress {
             word-wrap: break-word;
             width: 90%;
             margin: 0 auto;
@@ -217,6 +222,48 @@
            .red-button:hover {
             background-color: darkred;
             }
+        /* Add these styles at the end of your CSS */
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .popup-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        body.dark-mode .popup-content {
+            background-color: #444;
+            color: #f4f4f9;
+        }
     </style>
 </head>
 
@@ -226,10 +273,11 @@
         <button id="loginButton">Sign In with Nano</button>
         <button id="payButton" onclick="initiatePayment()">Pay with Nano</button>
         <button onclick="createNewItem()">Add New Item</button>
-        <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
+        <button id="accountDetailsButton">Account Details</button>
     </div>
     <div id="total">
         Total: $<span id="totalAmount">0.00</span>
+        <button class="red-button" onclick="resetTotal()">X</button>
         </div>
     <div id="emailForm">
         <h2>Please enter your email for payment notifications:</h2>
@@ -271,20 +319,30 @@
         </div>
     </div>
     
-    <div id="orderHistory">
-        <h2>Order History</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Address</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody id="orderHistoryBody">
-                <!-- Order history will be dynamically added here -->
-            </tbody>
-        </table>
+    
+
+        <!-- The Popup -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close" id="closePopup">&times;</span>
+            <h2>Account Details</h2>
+            <p>Email: <span id="popupEmail"></span></p>
+            <p>Address: <span id="popupAddress"></span></p>
+            <div id="orderHistory">
+                <h2>Order History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderHistoryBody">
+                        <!-- Order history will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="clearDataButton" class="nano-button red-button">Clear All Data</button>
+        </div>
     </div>
 
     <script>
@@ -409,7 +467,7 @@
                 document.getElementById('userEmailDisplay').textContent = userEmail;
                 document.getElementById('userAddress').textContent = userAddress;
                 document.getElementById('emailForm').style.display = 'none';
-                document.getElementById('welcome').style.display = 'block';
+                document.getElementById('welcome').style.display = 'none';
                 document.getElementById('payButton').style.display = 'block';
                 saveEmail();
                 saveOrderHistory();
@@ -508,7 +566,7 @@
             const orderHistory = document.getElementById('orderHistory');
             const newOrder = document.createElement('div');
             newOrder.classList.add('order');
-            newOrder.innerHTML = `<p> <a href="https://nano.community/${address}" target="_blank">${address}</a> on ${timestamp} for $${amount.toFixed(2)}</p>`;
+            newOrder.innerHTML = `<p> ${timestamp} <br><a class="userAddress" href="https://nano.community/${address}" target="_blank">${address}</a><br> $${amount.toFixed(2)} </p>`;
             orderHistory.appendChild(newOrder);
             saveOrderHistory();
         }
@@ -524,7 +582,7 @@
                 document.getElementById('userEmailDisplay').textContent = userEmail;
                 document.getElementById('userAddress').textContent = userAddress;
                 document.getElementById('emailForm').style.display = 'none';
-                document.getElementById('welcome').style.display = 'block';
+                document.getElementById('welcome').style.display = 'none';
                 document.getElementById('payButton').style.display = 'block';
             }
         }
@@ -562,7 +620,7 @@
                         } else {
                             document.getElementById('userEmailDisplay').textContent = userEmail;
                             document.getElementById('userAddress').textContent = userAddress;
-                            document.getElementById('welcome').style.display = 'block';
+                            document.getElementById('welcome').style.display = 'none';
                             document.getElementById('payButton').style.display = 'block';
                             loadOrderHistory();
                         }
@@ -585,11 +643,32 @@
                 } else {
                     document.getElementById('userEmailDisplay').textContent = userEmail;
                     document.getElementById('userAddress').textContent = userAddress;
-                    document.getElementById('welcome').style.display = 'block';
+                    document.getElementById('welcome').style.display = 'none';
                     document.getElementById('payButton').style.display = 'block';
                     loadOrderHistory();
                 }
             }
+        }
+        // Popup Logic
+        document.getElementById('accountDetailsButton').addEventListener('click', function () {
+            document.getElementById('popupEmail').innerText = document.getElementById('userEmailDisplay').innerText;
+            document.getElementById('popupAddress').innerText = document.getElementById('userAddress').innerText;
+            document.getElementById('popup').style.display = 'block';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function () {
+            document.getElementById('popup').style.display = 'none';
+        });
+
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('popup')) {
+                document.getElementById('popup').style.display = 'none';
+            }
+        }
+
+        function resetTotal() {
+            totalAmount = 0;
+            document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
         }
 
     </script>
